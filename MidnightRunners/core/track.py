@@ -1,42 +1,44 @@
 """
-Track class for the board game.
+BoardState class for managing state of track and racers during a race.
 """
 
-from typing import Optional
-from .space import Space
+from enum import Enum
 
+class TrackVersion(Enum):
+    MILD = "Mild Miles"
+    WILD = "Wild Wilds"
+
+# Represent start space (0) up to and including finish space (30)
+FIXED_TRACK_LENGTH = 31
+
+# Define special properties that spaces on the track can have
+class SpecialSpaceProperties(Enum):
+    START = "Start"
+    FINISH = "Finish"
+    ARROW_PLUS_1 = "Arrow +1"
+    ARROW_PLUS_2 = "Arrow +2"
+    ARROW_PLUS_3 = "Arrow +3"
+    ARROW_MINUS_1 = "Arrow -1"
+    ARROW_MINUS_2 = "Arrow -2"
+    ARROW_MINUS_4 = "Arrow -4"
+    STAR1 = "Star 1"
+    TRIP = "Trip"
 
 class Track:
-    """Represents a linear game track."""
+    def __init__(self, track_version: TrackVersion):
+        self.track_version = track_version
+        self.space_properties = [[] for _ in range(FIXED_TRACK_LENGTH)]
+        self.space_properties[0].append(SpecialSpaceProperties.START)
+        self.space_properties[30].append(SpecialSpaceProperties.FINISH)
 
-    def __init__(self, num_spaces: int):
-        """
-        Initialize a linear track.
-        
-        Args:
-            num_spaces: Number of spaces in the track
-        """
-        self.num_spaces = num_spaces
-        self.spaces: dict[int, Space] = {}
-        self._initialize_spaces()
-
-    def _initialize_spaces(self) -> None:
-        """Create spaces for the track."""
-        for space_id in range(self.num_spaces):
-            self.spaces[space_id] = Space(space_id, "normal")
-
-    def get_space(self, space_id: int) -> Optional[Space]:
-        """Get a space by ID."""
-        return self.spaces.get(space_id)
-
-    def get_total_spaces(self) -> int:
-        """Get the total number of spaces on the track."""
-        return len(self.spaces)
-
-    def set_space_type(self, space_id: int, space_type: str) -> None:
-        """Change the type of a space."""
-        if space_id in self.spaces:
-            self.spaces[space_id].space_type = space_type
-
-    def __repr__(self) -> str:
-        return f"Track({self.num_spaces} spaces)"
+        if track_version == TrackVersion.WILD:
+            self.space_properties[1].append(SpecialSpaceProperties.STAR1)
+            self.space_properties[5].append(SpecialSpaceProperties.TRIP)
+            self.space_properties[7].append(SpecialSpaceProperties.ARROW_PLUS_3)
+            self.space_properties[11].append(SpecialSpaceProperties.ARROW_PLUS_1)
+            self.space_properties[13].append(SpecialSpaceProperties.STAR1)
+            self.space_properties[16].append(SpecialSpaceProperties.ARROW_MINUS_4)
+            self.space_properties[17].append(SpecialSpaceProperties.TRIP)
+            self.space_properties[23].append(SpecialSpaceProperties.ARROW_PLUS_2)
+            self.space_properties[24].append(SpecialSpaceProperties.ARROW_MINUS_2)
+            self.space_properties[26].append(SpecialSpaceProperties.TRIP)

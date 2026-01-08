@@ -3,48 +3,38 @@ Midnight Runners - Board Game
 Entry point for the game
 """
 
-from MidnightRunners.core import Game
+from MidnightRunners.concreteracers.CR_Banana import Banana
+from MidnightRunners.concreteracers.CR_Gunk import Gunk
+from MidnightRunners.concreteracers.CR_Mouth import Mouth
+from MidnightRunners.concreteracers.CR_Romantic import Romantic
+from MidnightRunners.core import Race
+from MidnightRunners.core.Track import TrackVersion
+from MidnightRunners.concreteracers import *
+from MidnightRunners.core.Player import Player
 
 
 def main():
     """Main entry point for the game."""
-    # Create a game instance with 50 spaces
-    game = Game(num_spaces=50)
-    
-    # Add players
-    player1 = game.add_player("Alice")
-    player2 = game.add_player("Bob")
-    
-    # Create pieces for each player
-    piece1 = game.create_piece(player1.player_id, "runner")
-    piece2 = game.create_piece(player2.player_id, "runner")
-    
-    # Place pieces on the track
-    start_space = game.track.get_space(0)
-    if start_space:
-        start_space.add_piece(piece1.piece_id)
-        piece1.move_to(0)
-    
-    # Start the game
-    game.start_game()
-    
+    race = Race(track_version=TrackVersion.MILD,
+                player_to_racer_map={
+                    Player.P1: Banana(),
+                    Player.P2: Romantic(),
+                    Player.P3: Gunk(),
+                    Player.P4: Mouth()
+                })
+
+    race.trigger_before_race_powers()
+
     # Display game info
     print("=== Midnight Runners ===")
-    print(f"Game: {game}")
-    print(f"Track: {game.track}")
-    print(f"Game State: {game.state}")
+    print(f"Race: {race.num_players} players on {race.track.track_version.value} track")
     print()
-    
+
     # Display players
     print("Players:")
-    for player in game.state.players:
-        print(f"  - {player}")
-        for piece in player.pieces:
-            print(f"    - {piece}")
-    
-    print()
-    print(f"Current Player: {game.state.get_current_player().name}")
-    print(f"Game Phase: {game.state.phase.value}")
+    for player, racer in race.board_state.player_to_racer_name_map.items():
+        print(f" Player name: {player}")
+        print(f"  Position {racer}: {race.board_state.racer_name_to_position_map[racer]}")
 
 
 if __name__ == "__main__":
