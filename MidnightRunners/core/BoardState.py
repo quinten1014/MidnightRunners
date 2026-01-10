@@ -20,10 +20,9 @@ class BoardState:
 
         self.racer_name_to_position_map = {racer: 0 for racer in player_to_racer_name_map.values()}
 
-    def move_racer_spaces(self, racer_name: RacerName, spaces: int):
-        """Move the specified racer forward or backward by the given number of spaces."""
+    def move_racer_to_space(self, racer_name: RacerName, target_space: int):
+        """Move the specified racer to the given target space."""
         if racer_name in self.racer_name_to_position_map:
-            new_position = self.racer_name_to_position_map[racer_name] + spaces
             # Ensure within track bounds
-            new_position = max(0, min(new_position, Track.FIXED_TRACK_LENGTH))
-            self.racer_name_to_position_map[racer_name] = new_position
+            target_space = max(0, min(target_space, Track.FIXED_TRACK_LENGTH))
+            self.racer_name_to_position_map[racer_name] = target_space

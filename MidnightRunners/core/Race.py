@@ -23,10 +23,11 @@ class Race:
         self.turn_order = [Player.P1, Player.P2, Player.P3, Player.P4, Player.P5, Player.P6][:self.num_players]
         self.current_round = 0
         self.current_turn_index = 0
+        self.is_finished = False
 
     def setup_race(self):
         """Put all racers in starting positions, trigger any before race effects."""
-        self.board_state = self.board_state.trigger_before_race_powers(self.board_state)
+        self.trigger_before_race_powers()
         pass
 
     def trigger_before_race_powers(self) -> BoardState:
@@ -36,9 +37,8 @@ class Race:
 
     def execute_turn(self):
         """Execute the current player's turn."""
-        current_player = self.turn_order[self.current_turn_index]
-        current_racer = self.player_to_racer_map[current_player]
-
+        # TODO: Implement turn execution logic
+        self.is_finished = True  # Placeholder
         pass
 
     def go_to_next_turn(self):

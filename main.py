@@ -23,7 +23,10 @@ def main():
                     Player.P4: Mouth()
                 })
 
-    race.trigger_before_race_powers()
+    race.setup_race()
+    while not race.is_finished:
+        race.execute_turn()
+        race.go_to_next_turn()
 
     # Display game info
     print("=== Midnight Runners ===")
