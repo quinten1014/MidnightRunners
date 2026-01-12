@@ -23,11 +23,6 @@ def main():
                     Player.P4: Mouth()
                 })
 
-    race.setup_race()
-    while not race.is_finished:
-        race.execute_turn()
-        race.go_to_next_turn()
-
     # Display game info
     print("=== Midnight Runners ===")
     print(f"Race: {race.num_players} players on {race.track.track_version.value} track")
@@ -39,6 +34,7 @@ def main():
         print(f" Player name: {player}")
         print(f"  Position {racer}: {race.board_state.racer_name_to_position_map[racer]}")
 
+    race.do_race()
 
 if __name__ == "__main__":
     main()
