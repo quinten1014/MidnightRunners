@@ -3,5 +3,5 @@ from MidnightRunners.core import AbstractRacer, BoardState
 
 
 class Romantic(AbstractRacer):
-    def __init__(self):
-        self.name = RacerName.ROMANTIC
+    def __init__(self, ask_for_input: bool = False):
+        super().__init__(RacerName.ROMANTIC, ask_for_move_input=ask_for_input)

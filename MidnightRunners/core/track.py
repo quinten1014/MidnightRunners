@@ -1,6 +1,5 @@
 from enum import Enum
 from re import match
-from unittest import case
 
 from MidnightRunners.core import BoardState
 from MidnightRunners.core.BoardView import PrintChangeList
@@ -66,23 +65,24 @@ class Track:
 
             for pos_change in change.position_changes:
                 racer_name, _, landed_pos = pos_change.racer_name, pos_change.old_position, pos_change.new_position
+                player_name = bs.get_player_by_racer(racer_name)
                 landing_space_properties = self.space_properties[landed_pos]
 
                 for property in landing_space_properties:
                     # Getting here means there is at least one property to process
                     special_space_triggered = True
                     new_change = ChangeSet()
-                    new_change.add_message(f"{racer_name} landed on special space {landed_pos} with property {property.name}.")
+                    new_change.add_message(f"{racer_name.value} landed on special space {landed_pos} with property {property.name}.")
                     if property == SpecialSpaceProperties.TRIP and not bs.racer_trip_map[pos_change.racer_name]:
                         # Avoid double-tripping
                         new_change.add_trip_change(pos_change.racer_name, False, True)
-                        new_change.add_message(f"{racer_name} is tripped.")
+                        new_change.add_message(f"{racer_name.value} is tripped.")
                     elif property == SpecialSpaceProperties.STAR1:
-                        new_change.add_point_change(racer_name, 1)
-                        new_change.add_message(f"{racer_name} gains 1 point.")
+                        new_change.add_point_change(player_name, 1)
+                        new_change.add_message(f"{player_name.value} gains 1 point.")
                     elif property == SpecialSpaceProperties.FINISH:
                         new_change.add_finished_racer(racer_name)
-                        new_change.add_message(f"{racer_name} finished!")
+                        new_change.add_message(f"{racer_name.value} finished!")
                     else:
                         pos_after_move = landed_pos
                         match(property):
@@ -96,7 +96,7 @@ class Track:
                         pos_change.set_move_type(MoveType.TRACK)
                         new_change.add_pos_change(pos_change)
 
-                        new_change.add_message(f"{racer_name} moves to space {pos_after_move}.")
+                        new_change.add_message(f"{racer_name.value} moves to space {pos_after_move}.")
                     new_changes_to_add.append(new_change)
 
         changes_after_processing.extend(new_changes_to_add)

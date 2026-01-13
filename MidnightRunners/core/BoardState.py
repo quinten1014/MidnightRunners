@@ -17,6 +17,7 @@ class BoardState:
 
         self.first_place_racer = None
         self.second_place_racer = None
+        self.eliminated_racers = set()
         self.race_is_finished = False
         self.pts_reward_first_place = 3
         self.pts_reward_second_place = 1
@@ -47,14 +48,16 @@ class BoardState:
                 self.racer_name_to_position_map[pos_change.racer_name] = pos_change.new_position
             for trip_change in change.trip_changes:
                 self.racer_trip_map[trip_change.racer_name] = trip_change.tripped_after
+            for eliminate_change in change.eliminate_changes:
+                self.eliminated_racers.add(eliminate_change.racer_name)
             for point_change in change.point_changes:
-                self.player_points_map[point_change.player] = point_change.new_points
+                self.player_points_map[point_change.player] += point_change.points_delta
             for turn_phase_change in change.turn_phase_changes:
                 self.current_turn_phase = turn_phase_change.new_phase
                 if turn_phase_change.new_phase == TurnPhase.PH1_START_OF_TURN:
                     self.current_turn_number += 1
             for turn_sequence_change in change.turn_sequence_changes:
-                self.turn_order = turn_sequence_change.new_turn_order
+                self.turn_order = list(turn_sequence_change.new_turn_order)
             for finished_racer in change.finished_racers:
                 if self.first_place_racer == None:
                     self.first_place_racer = finished_racer

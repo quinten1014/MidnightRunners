@@ -37,6 +37,10 @@ class TripChange:
         self.tripped_before = tripped_before
         self.tripped_after = tripped_after
 
+class EliminateChange:
+    def __init__(self, racer_name: RacerName):
+        self.racer_name = racer_name
+
 class PointChange:
     def __init__(self, player: Player, points_delta: int):
         self.player = player
@@ -48,8 +52,7 @@ class TurnPhaseChange:
         self.new_phase = new_phase
 
 class TurnSequenceChange:
-    def __init__(self, old_turn_order: list, new_turn_order: list):
-        self.old_turn_order = old_turn_order
+    def __init__(self, new_turn_order: list):
         self.new_turn_order = new_turn_order
 
 class ChangeSet:
@@ -59,6 +62,7 @@ class ChangeSet:
         self.point_changes = []
         self.turn_phase_changes = []
         self.turn_sequence_changes = []
+        self.eliminate_changes = []
         self.finished_racers = []
         self.change_messages = []
         self.processed_by_track = False
@@ -78,24 +82,21 @@ class ChangeSet:
         trip_change = TripChange(racer_name, tripped_before, tripped_after)
         self.trip_changes.append(trip_change)
 
-    def add_trip_change(self, trip_change: TripChange):
-        self.trip_changes.append(trip_change)
-
     def add_point_change(self, player: Player, points_delta: int):
         point_change = PointChange(player, points_delta)
-        self.point_changes.append(point_change)
-
-    def add_point_change(self, point_change: PointChange):
         self.point_changes.append(point_change)
 
     def add_turn_phase_change(self, old_phase: TurnPhase, new_phase: TurnPhase):
         turn_phase_change = TurnPhaseChange(old_phase, new_phase)
         self.turn_phase_changes.append(turn_phase_change)
-        self.add_message(f"Advancing turn phase from {old_phase.name} to {new_phase.name}.")
 
-    def add_turn_sequence_change(self, old_turn_order: list, new_turn_order: list):
-        turn_sequence_change = TurnSequenceChange(old_turn_order, new_turn_order)
+    def add_turn_sequence_change(self, new_turn_order: list):
+        turn_sequence_change = TurnSequenceChange(new_turn_order)
         self.turn_sequence_changes.append(turn_sequence_change)
 
     def add_finished_racer(self, racer_name: RacerName):
         self.finished_racers.append(racer_name)
+
+    def add_eliminate_change(self, racer_name: RacerName):
+        eliminate_change = EliminateChange(racer_name)
+        self.eliminate_changes.append(eliminate_change)
