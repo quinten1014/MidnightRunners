@@ -107,12 +107,16 @@ class AbstractRacer:
                 change.racers_processed.add(self.name)
                 my_turn_changes = []
                 if self.check_for_start_turn_moment(bs_copy, change):
+                    # print(f"DEBUG: START TURN TRIGGERED FOR {self.name.value}")
                     my_turn_changes = self.get_start_of_turn_changes(bs_copy)
                 elif self.check_for_before_main_move_moment(bs_copy, change):
+                    # print(f"DEBUG: BEFORE MAIN MOVE TRIGGERED FOR {self.name.value}")
                     my_turn_changes = self.get_before_main_move_changes(bs_copy)
                 elif self.check_for_main_move_moment(bs_copy, change):
+                    # print(f"DEBUG: MAIN MOVE TRIGGERED FOR {self.name.value}")
                     my_turn_changes = self.get_main_move_changes(bs_copy)
                 elif self.check_for_end_turn_moment(bs_copy, change):
+                    # print(f"DEBUG: END TURN TRIGGERED FOR {self.name.value}")
                     my_turn_changes = self.get_end_of_turn_changes(bs_copy)
                 if my_turn_changes:
                     had_my_turn_triggers = True

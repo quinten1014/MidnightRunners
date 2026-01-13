@@ -193,8 +193,8 @@ class RaceReplayDialog(QDialog):
             text_lines.append("="*60)
             text_lines.append("RACE COMPLETE!")
             text_lines.append("="*60)
-            text_lines.append(f"Winner: {bs.first_place_racer.value}")
-            text_lines.append(f"Second Place: {bs.second_place_racer.value}")
+            text_lines.append(f"Winner: {bs.first_place_racer.value if bs.first_place_racer else 'N/A'}")
+            text_lines.append(f"Second Place: {bs.second_place_racer.value if bs.second_place_racer else 'N/A'}")
 
         self.replay_text.setText("\n".join(text_lines))
 
@@ -206,30 +206,29 @@ class RaceReplayDialog(QDialog):
         self.prev_button.setEnabled(self.current_step > 0)
         self.next_button.setEnabled(self.current_step < total_steps)
 
-    def _prev_step(self, items_skipped = False):
+    def _prev_step(self, items_skipped = 0):
         """Go to previous step."""
         if self.current_step > 0:
             self.current_step -= 1
             if self.current_step > 0:
                 current_change = self.changeset[self.current_step]
-                if ((not current_change.position_changes) and self.skip_no_movement_changes) or \
-                    ((len(current_change.change_messages) == 1 and current_change.turn_phase_changes) and self.skip_turn_phase_only_changes):
-                    self._prev_step(True)
+                if self._change_skippable(current_change):
+                    self._prev_step(items_skipped + 1)
+                elif items_skipped == 0 and self._change_skippable(current_change):
+                    self._prev_step(items_skipped=0)
                 elif items_skipped and self.current_step > 0:
-                    self.current_step -= 1
+                    self.current_step += 1
             self._display_step()
 
-    def _next_step(self, items_skipped = False):
+    def _next_step(self, items_skipped = 0):
         """Go to next step."""
         total_steps = len(self.changeset) if self.changeset else 0
         if self.current_step < total_steps:
             self.current_step += 1
-            # If current step has no messages and some form of skipping is enabled, advance further
             if self.current_step < total_steps:
                 current_change = self.changeset[self.current_step]
-                if ((not current_change.position_changes) and self.skip_no_movement_changes) or \
-                    ((len(current_change.change_messages) == 1 and current_change.turn_phase_changes) and self.skip_turn_phase_only_changes):
-                    self._next_step(True)
+                if self._change_skippable(current_change):
+                    self._next_step(items_skipped + 1)
                 elif items_skipped and self.current_step < total_steps:
                     self.current_step += 1
             self._display_step()
@@ -237,6 +236,14 @@ class RaceReplayDialog(QDialog):
             # Stop playing if we reach the end
             if self.current_step >= total_steps and self.is_playing:
                 self._toggle_play()
+
+    def _change_skippable(self, change) -> bool:
+        """Check if a change is skippable based on current settings."""
+        if (not change.position_changes) and self.skip_no_movement_changes:
+            return True
+        if (len(change.change_messages) == 1 and change.turn_phase_changes) and self.skip_turn_phase_only_changes:
+            return True
+        return False
 
     def _skip_to_end(self):
         """Skip to the end of the replay."""

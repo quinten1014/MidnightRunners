@@ -59,6 +59,7 @@ class Race:
             self.go_to_next_turn()
             phase_change.add_turn_sequence_change(self.turn_order)
             phase_change.add_message(f"Next turn: player {self.turn_order[0].name}")
+            print(f"=== [Turn {self.num_turns_taken + 1}] Processing turn... ================================================")
 
         phase_change.add_message(f"Advancing turn phase from {current_phase.name} to {next_phase.name}.")
         phase_change.add_turn_phase_change(current_phase, next_phase)
