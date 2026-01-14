@@ -64,6 +64,7 @@ class MidnightRunnersMainWindow(QMainWindow):
         track_label = QLabel("Track Version:")
         self.track_combo = QComboBox()
         self.track_combo.addItems([TrackVersion.MILD.value, TrackVersion.WILD.value])
+        self.track_combo.setCurrentText(TrackVersion.WILD.value)
         track_layout.addWidget(track_label)
         track_layout.addWidget(self.track_combo)
         track_layout.addStretch()
