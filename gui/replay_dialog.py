@@ -151,8 +151,6 @@ class RaceReplayDialog(QDialog):
         self.changeset = race_data['changeset']
         self.initial_board_state = race_data['initial_board_state']
 
-        # PrintChangeList(self.changeset, title="Loaded changeset for replay:")
-
         # Update info label
         num_races = len(self.completed_races)
         if num_races > 1:

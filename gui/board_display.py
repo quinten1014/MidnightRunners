@@ -5,6 +5,7 @@ Custom widget for displaying the race track and racers in 2D
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui import QPainter, QColor, QPen, QFont
 
+from MidnightRunners.concreteracers.RacerList import RacerNameToColorMap
 from MidnightRunners.core.Track import SpecialSpaceProperties
 
 
@@ -17,14 +18,6 @@ class BoardDisplayWidget(QWidget):
         self.track = None
         self.setMinimumHeight(300)
         self.setMaximumHeight(400)
-
-        # Color mapping for players
-        self.player_colors = {
-            'Player 1': QColor(255, 100, 100),  # Red
-            'Player 2': QColor(100, 100, 255),  # Blue
-            'Player 3': QColor(100, 255, 100),  # Green
-            'Player 4': QColor(255, 255, 100),  # Yellow
-        }
 
     def set_board_state(self, board_state, track):
         """Update the board state to display."""
@@ -59,6 +52,9 @@ class BoardDisplayWidget(QWidget):
         font = QFont("Arial", 8)
         painter.setFont(font)
 
+        line_height = 170
+        overshoot = 30
+
         for i in range(track_length):
             x = margin + i * space_width
 
@@ -67,10 +63,9 @@ class BoardDisplayWidget(QWidget):
             painter.drawEllipse(int(x - 3), int(track_y - 3), 6, 6)
 
             # Draw vertical line for space
-            overshoot = 30
             if (i < track_length - 1):
                 x_line = x + (space_width/2)
-                painter.drawLine(int(x_line), int(track_y + overshoot), int(x_line), int(-(height/2) + margin))
+                painter.drawLine(int(x_line), int(track_y + overshoot), int(x_line), int(track_y - line_height))
 
             # Draw space number
             height = painter.fontMetrics().boundingRect(str(i)).height()
@@ -132,24 +127,48 @@ class BoardDisplayWidget(QWidget):
             y_offset = -50
 
             for racer_name in racers:
-                player = self.board_state.get_player_by_racer(racer_name)
-                color = self.player_colors.get(player.value, QColor(128, 128, 128))
-
                 # Draw racer circle
                 racer_size = 20
-                painter.setBrush(color)
+                painter.setBrush(QColor(*RacerNameToColorMap[racer_name]))
                 painter.setPen(QPen(QColor(0, 0, 0), 2))
                 painter.drawEllipse(int(x - racer_size/2), int(track_y + y_offset - racer_size/2),
                                    racer_size, racer_size)
 
                 # Draw racer initial in circle
-                painter.setPen(QColor(255, 255, 255))
                 initial = racer_name.value[0]
-                painter.drawText(int(x - 6), int(track_y + y_offset + 6), initial)
+                initial_width = painter.fontMetrics().boundingRect(initial).width()
+                painter.setPen(QColor(0, 0, 0))
+                painter.drawText(int(x - (initial_width/2)), int(track_y + y_offset + 6), initial)
 
                 # Draw trip indicator
+                indicator = "✕"
+                indicator_width = painter.fontMetrics().boundingRect(indicator).width()
                 if self.board_state.racer_trip_map.get(racer_name, False):
-                    painter.setPen(QPen(QColor(255, 0, 0), 3))
-                    painter.drawText(int(x + 15), int(track_y + y_offset + 6), "✕")
+                    painter.setPen(QPen(QColor(255, 255, 255), 20))
+                    painter.drawText(int(x - (indicator_width/2)), int(track_y + y_offset + 6), indicator)
 
                 y_offset -= 30
+
+        # Draw legend
+        legend_y = track_y + line_height
+        legend_x = margin
+        legend_font = QFont("Arial", 9)
+        painter.setFont(legend_font)
+
+        for player, racer_name in self.board_state.player_to_racer_name_map.items():
+            color = QColor(*RacerNameToColorMap[racer_name])
+
+            # Draw color circle
+            circle_size = 15
+            painter.setBrush(color)
+            painter.setPen(QPen(QColor(0, 0, 0), 2))
+            painter.drawEllipse(int(legend_x), int(legend_y - circle_size/2), circle_size, circle_size)
+
+            # Draw racer name
+            painter.setPen(QColor(0, 0, 0))
+            text = f"{player.value}: {racer_name.value}"
+            painter.drawText(int(legend_x + circle_size + 8), int(legend_y + 5), text)
+
+            # Move to next legend entry
+            text_width = painter.fontMetrics().boundingRect(text).width()
+            legend_x += circle_size + text_width + 30

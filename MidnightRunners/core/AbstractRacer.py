@@ -7,7 +7,7 @@ from MidnightRunners.core.BoardView import PrintChangeList
 from MidnightRunners.core.StateChange import ChangeSet, MoveType, PositionChange, TurnPhaseChange
 from MidnightRunners.core.Track import Track
 from MidnightRunners.core.Turn import TurnPhase
-from gui.input_dialogs import DiceRollInputDialog
+# from gui.input_dialogs import DiceRollInputDialog
 
 
 class AbstractRacer:
@@ -31,22 +31,19 @@ class AbstractRacer:
             main_move_change.add_message(f"{self.name.value} is tripped and skips their main move this turn.")
         else:
             # Else, roll D6 and move forward
-            if self.ask_for_move_input:
-                # Try to use GUI dialog first
-                roll = DiceRollInputDialog.get_roll_value(self.name.value, min_value=1, max_value=6)
+            if self.name == RacerName.BANANA:
+                roll = 1
+            elif self.name == RacerName.GUNK:
+                roll = 6
             else:
                 roll = random.randint(1, 6)
-                if self.name == RacerName.BANANA:
-                    roll = 6  # Banana always rolls 6 for testing purposes
-                else:
-                    roll = 1
             current_position = board_state.racer_name_to_position_map[self.name]
             new_position = Track.GetNewSpace(current_position, roll)
             pos_change = PositionChange(self.name, current_position, new_position)
             pos_change.set_move_type(MoveType.MAIN)
             pos_change.set_intended_movement(roll)
             pos_change.add_dice_roll(self.name, roll)
-            main_move_change.add_pos_change(pos_change)
+            main_move_change.add_pos_change_obj(pos_change)
             main_move_change.add_message(f"{self.name.value} rolls a {roll} for their main move and moves {roll} spaces.")
 
         change_list.append(main_move_change)

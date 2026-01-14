@@ -97,7 +97,7 @@ class Track:
                             case SpecialSpaceProperties.ARROW_MINUS_4: pos_after_move = self.GetNewSpace(landed_pos, -4)
                         pos_change = PositionChange(racer_name, landed_pos, pos_after_move)
                         pos_change.set_move_type(MoveType.TRACK)
-                        new_change.add_pos_change(pos_change)
+                        new_change.add_pos_change_obj(pos_change)
 
                         new_change.add_message(f"{racer_name.value} moves to space {pos_after_move}.")
                     new_changes_to_add.append(new_change)

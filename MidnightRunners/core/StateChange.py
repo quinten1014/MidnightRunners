@@ -57,7 +57,7 @@ class TurnSequenceChange:
 
 class ChangeSet:
     def __init__(self):
-        self.position_changes = []
+        self.position_changes = [] # All pos changes in a set are moves that happen simultaneously
         self.trip_changes = []
         self.point_changes = []
         self.turn_phase_changes = []
@@ -75,7 +75,7 @@ class ChangeSet:
         pos_change = PositionChange(racer_name, old_position, new_position, warped)
         self.position_changes.append(pos_change)
 
-    def add_pos_change(self, pos_change: PositionChange):
+    def add_pos_change_obj(self, pos_change: PositionChange):
         self.position_changes.append(pos_change)
 
     def add_trip_change(self, racer_name: RacerName, tripped_before: bool, tripped_after: bool):

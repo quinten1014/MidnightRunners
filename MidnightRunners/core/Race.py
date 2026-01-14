@@ -140,7 +140,6 @@ class Race:
         finished = self.board_state.first_place_racer == racer_name or \
                    self.board_state.second_place_racer == racer_name
         eliminated = racer_name in self.board_state.eliminated_racers
-        print(f"DEBUG: Checking if player {player.name} with racer {racer_name.value} is out of the race: Finished={finished}, Eliminated={eliminated}")
         return finished or eliminated
 
     def apply_changes_to_copy(self, bs: BoardState, changes: list) -> BoardState:
