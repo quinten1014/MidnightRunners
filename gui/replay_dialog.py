@@ -4,10 +4,133 @@ Race replay dialog for viewing completed races
 
 from copy import deepcopy
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
-                              QPushButton, QComboBox, QTextEdit, QCheckBox)
-from PyQt6.QtCore import QTimer
+                              QPushButton, QComboBox, QTextEdit, QCheckBox, QWidget, QSplitter)
+from PyQt6.QtCore import QTimer, Qt
+from PyQt6.QtGui import QPainter, QColor, QPen, QFont
 
 from MidnightRunners.core.BoardView import PrintBoardState, PrintChangeList
+from MidnightRunners.core.Track import SpecialSpaceProperties
+
+
+class BoardDisplayWidget(QWidget):
+    """Custom widget for drawing the race track and racers in 2D."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.board_state = None
+        self.track = None
+        self.setMinimumHeight(300)
+
+        # Color mapping for players
+        self.player_colors = {
+            'Player 1': QColor(255, 100, 100),  # Red
+            'Player 2': QColor(100, 100, 255),  # Blue
+            'Player 3': QColor(100, 255, 100),  # Green
+            'Player 4': QColor(255, 255, 100),  # Yellow
+        }
+
+    def set_board_state(self, board_state, track):
+        """Update the board state to display."""
+        self.board_state = board_state
+        self.track = track
+        self.update()  # Trigger a repaint
+
+    def paintEvent(self, event):
+        """Draw the board and racers."""
+        if not self.board_state or not self.track:
+            return
+
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+        # Calculate dimensions
+        width = self.width()
+        height = self.height()
+        margin = 40
+        track_length = 31  # Positions 0-30
+
+        # Draw track
+        track_y = height // 2
+        track_width = width - 2 * margin
+        space_width = track_width / (track_length - 1)
+
+        # Draw track line
+        painter.setPen(QPen(QColor(50, 50, 50), 3))
+        painter.drawLine(margin, track_y, width - margin, track_y)
+
+        # Draw spaces and special properties
+        font = QFont("Arial", 8)
+        painter.setFont(font)
+
+        for i in range(track_length):
+            x = margin + i * space_width
+
+            # Draw space marker
+            painter.setPen(QPen(QColor(0, 0, 0), 2))
+            painter.drawEllipse(int(x - 3), int(track_y - 3), 6, 6)
+
+            # Draw space number
+            painter.drawText(int(x - 10), int(track_y + 20), str(i))
+
+            # Draw special properties
+            if i < len(self.track.space_properties):
+                properties = self.track.space_properties[i]
+                y_offset = -25
+                for prop in properties:
+                    if prop == SpecialSpaceProperties.START:
+                        painter.setPen(QColor(0, 200, 0))
+                        painter.drawText(int(x - 15), int(track_y + y_offset), "START")
+                    elif prop == SpecialSpaceProperties.FINISH:
+                        painter.setPen(QColor(200, 0, 0))
+                        painter.drawText(int(x - 15), int(track_y + y_offset), "FINISH")
+                    elif prop == SpecialSpaceProperties.TRIP:
+                        painter.setPen(QColor(150, 0, 150))
+                        painter.drawText(int(x - 10), int(track_y + y_offset), "TRIP")
+                    elif "ARROW" in prop.name:
+                        painter.setPen(QColor(0, 0, 200))
+                        arrow_text = prop.name.replace("ARROW_", "→")
+                        painter.drawText(int(x - 12), int(track_y + y_offset), arrow_text)
+                    elif "STAR" in prop.name:
+                        painter.setPen(QColor(255, 200, 0))
+                        painter.drawText(int(x - 8), int(track_y + y_offset), "★")
+                    y_offset -= 15
+
+        # Draw racers
+        racer_positions = {}
+        for racer_name, position in self.board_state.racer_name_to_position_map.items():
+            if position not in racer_positions:
+                racer_positions[position] = []
+            racer_positions[position].append(racer_name)
+
+        font_bold = QFont("Arial", 10, QFont.Weight.Bold)
+        painter.setFont(font_bold)
+
+        for position, racers in racer_positions.items():
+            x = margin + position * space_width
+            y_offset = -50
+
+            for racer_name in racers:
+                player = self.board_state.get_player_by_racer(racer_name)
+                color = self.player_colors.get(player.value, QColor(128, 128, 128))
+
+                # Draw racer circle
+                racer_size = 20
+                painter.setBrush(color)
+                painter.setPen(QPen(QColor(0, 0, 0), 2))
+                painter.drawEllipse(int(x - racer_size/2), int(track_y + y_offset - racer_size/2),
+                                   racer_size, racer_size)
+
+                # Draw racer initial in circle
+                painter.setPen(QColor(255, 255, 255))
+                initial = racer_name.value[0]
+                painter.drawText(int(x - 6), int(track_y + y_offset + 6), initial)
+
+                # Draw trip indicator
+                if self.board_state.racer_trip_map.get(racer_name, False):
+                    painter.setPen(QPen(QColor(255, 0, 0), 3))
+                    painter.drawText(int(x + 15), int(track_y + y_offset + 6), "✕")
+
+                y_offset -= 30
 
 
 class RaceReplayDialog(QDialog):
@@ -20,11 +143,11 @@ class RaceReplayDialog(QDialog):
         self.current_race_index = 0
         self.current_step = 0
         self.is_playing = False
-        self.skip_turn_phase_only_changes = False
-        self.skip_no_movement_changes = False
+        self.skip_turn_phase_only_changes = True
+        self.skip_no_movement_changes = True
 
         self.setWindowTitle("Race Replay")
-        self.setMinimumSize(700, 600)
+        self.setMinimumSize(1000, 800)
 
         self._setup_ui()
         self._load_race(0)
@@ -56,11 +179,23 @@ class RaceReplayDialog(QDialog):
         self.progress_label.setStyleSheet("font-size: 12px; padding: 5px;")
         layout.addWidget(self.progress_label)
 
+        # Create a splitter for graphical display and text display
+        splitter = QSplitter(Qt.Orientation.Vertical)
+
+        # Graphical board display
+        self.board_display = BoardDisplayWidget()
+        splitter.addWidget(self.board_display)
+
         # Text display area
         self.replay_text = QTextEdit()
         self.replay_text.setReadOnly(True)
         self.replay_text.setStyleSheet("font-family: 'Courier New', monospace; font-size: 11px;")
-        layout.addWidget(self.replay_text)
+        splitter.addWidget(self.replay_text)
+
+        # Set initial sizes - give more space to graphical display
+        splitter.setSizes([400, 200])
+
+        layout.addWidget(splitter)
 
         # Control buttons
         controls_layout = QHBoxLayout()
@@ -101,6 +236,7 @@ class RaceReplayDialog(QDialog):
         # Skip turn-phase-only-changes checkbox
         checkbox_layout = QHBoxLayout()
         self.skip_turn_phase_only_checkbox = QCheckBox("Skip changes with only turn phase changes")
+        self.skip_turn_phase_only_checkbox.setChecked(True)
         self.skip_turn_phase_only_checkbox.stateChanged.connect(self._on_skip_turn_phase_only_checkbox_changed)
         checkbox_layout.addWidget(self.skip_turn_phase_only_checkbox)
         checkbox_layout.addStretch()
@@ -109,6 +245,7 @@ class RaceReplayDialog(QDialog):
         # Skip no-movement-changes checkbox
         checkbox_layout = QHBoxLayout()
         self.skip_no_movement_checkbox = QCheckBox("Skip changes without movement changes")
+        self.skip_no_movement_checkbox.setChecked(True)
         self.skip_no_movement_checkbox.stateChanged.connect(self._on_skip_no_movement_checkbox_changed)
         checkbox_layout.addWidget(self.skip_no_movement_checkbox)
         checkbox_layout.addStretch()
@@ -169,8 +306,7 @@ class RaceReplayDialog(QDialog):
         text_lines.append("="*60)
 
         # Show current board state details
-        for player in bs.turn_order:
-            racer_name = bs.player_to_racer_name_map[player]
+        for player, racer_name in bs.player_to_racer_name_map.items():
             position = bs.racer_name_to_position_map[racer_name]
             pts = bs.player_points_map[player]
             tripped = " (tripped)" if bs.racer_trip_map.get(racer_name, False) else ""
@@ -183,7 +319,7 @@ class RaceReplayDialog(QDialog):
             start_index = max(0, show_up_to_index - 20)  # Show last few changes for context
             for i in reversed(range(start_index, show_up_to_index)):
                 change = self.changeset[i]
-                if change.change_messages:
+                if change.change_messages and self._change_viewable(change):
                     text_lines.append("-" * 60)
                     for msg in change.change_messages:
                         text_lines.append(f"  {msg}")
@@ -197,6 +333,9 @@ class RaceReplayDialog(QDialog):
             text_lines.append(f"Second Place: {bs.second_place_racer.value if bs.second_place_racer else 'N/A'}")
 
         self.replay_text.setText("\n".join(text_lines))
+
+        # Update graphical board display
+        self.board_display.set_board_state(bs, self.current_race.track)
 
         # Update progress
         total_steps = len(self.changeset) if self.changeset else 0
@@ -236,6 +375,12 @@ class RaceReplayDialog(QDialog):
             # Stop playing if we reach the end
             if self.current_step >= total_steps and self.is_playing:
                 self._toggle_play()
+
+    def _change_viewable(self, change) -> bool:
+        """Check if a change is viewable based on current settings."""
+        if (len(change.change_messages) == 1 and change.turn_phase_changes) and self.skip_turn_phase_only_changes:
+            return False
+        return True
 
     def _change_skippable(self, change) -> bool:
         """Check if a change is skippable based on current settings."""
@@ -284,8 +429,10 @@ class RaceReplayDialog(QDialog):
         """Handle skip turn-phase-only-changes checkbox state change."""
         # Refresh internal next/prev step behavior flag so that changes with only turn phase changes are/are not skipped
         self.skip_turn_phase_only_changes = (state == 2)  # Checked state is 2
+        self._display_step()
 
     def _on_skip_no_movement_checkbox_changed(self, state):
         """Handle skip changes without movement changes checkbox state change."""
         # Refresh internal next/prev step behavior flag so that changes with no messages are/are not skipped
         self.skip_no_movement_changes = (state == 2)  # Checked state is 2
+        self._display_step()
