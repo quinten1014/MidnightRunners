@@ -4,6 +4,8 @@ import random
 from MidnightRunners.concreteracers.RacerList import RacerName
 from MidnightRunners.core.BoardState import BoardState
 from MidnightRunners.core.BoardView import PrintChangeList
+from MidnightRunners.core.Player import Player
+from MidnightRunners.core.RacerAI import NaiveRacerAI
 from MidnightRunners.core.StateChange import ChangeSet, MoveType, PositionChange, TurnPhaseChange
 from MidnightRunners.core.Track import Track
 from MidnightRunners.core.Turn import TurnPhase
@@ -11,9 +13,10 @@ from MidnightRunners.core.Turn import TurnPhase
 
 
 class AbstractRacer:
-    def __init__(self, name: str, ask_for_move_input: bool = False):
-        self.name = name
-        self.tripped = False
+    def __init__(self, player_name: Player, racer_name: str, ask_for_move_input: bool = False):
+        self.player_name = player_name
+        self.name = racer_name
+        self.ai = NaiveRacerAI(self.player_name, self.name) # Can be replaced with concrete racer specific AI if needed
         self.ask_for_move_input = ask_for_move_input
 
     def before_race_effect(self, board_state) -> BoardState:
@@ -115,7 +118,7 @@ class AbstractRacer:
                 elif self.check_for_end_turn_moment(bs_copy, change):
                     # print(f"DEBUG: END TURN TRIGGERED FOR {self.name.value}")
                     my_turn_changes = self.get_end_of_turn_changes(bs_copy)
-                if my_turn_changes:
+                if len(my_turn_changes) > 0:
                     had_my_turn_triggers = True
                 new_changes.extend(my_turn_changes)
 

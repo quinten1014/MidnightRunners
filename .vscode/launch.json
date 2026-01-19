@@ -1,15 +1,16 @@
 {
     "configurations": [
 
+
         {"name":"Python Debugger: Current File","type":"debugpy","request":"launch","program":"${file}","console":"integratedTerminal"},
         {
-            "name": "Python Debugger: Python File",
+            "name": "MNR: Run with Debugger",
             "type": "debugpy",
             "request": "launch",
             "program": "main.py",
         },
         {
-            "name": "Python: Run Unit Tests",
+            "name": "MNR: Run Unit Tests",
             "type": "debugpy",
             "request": "launch",
             "module": "unittest",

@@ -17,12 +17,12 @@ class IRacerAI:
 
     @abstractmethod
     def choose_path(self, bs: BoardState, bs_options: list) -> int:
-        """Choose a path from available paths based on the current board state."""
-        return bs_options[0]
+        """Choose a path (index) from available paths based on the current board state."""
+        return 0
 
 class RandomRacerAI(IRacerAI):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, player_name: Player, racer_name: RacerName):
+        super().__init__(player_name, racer_name)
 
     def decide_reroll(self, bs: BoardState, reroll_count: int, rolled_value: int) -> bool:
         """Randomly decides to reroll or not."""
@@ -35,8 +35,8 @@ class RandomRacerAI(IRacerAI):
         return bs_options[0]
 
 class NaiveRacerAI(IRacerAI):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, player_name: Player, racer_name: RacerName):
+        super().__init__(player_name, racer_name)
 
     def decide_reroll(self, bs: BoardState, reroll_count: int, rolled_value: int) -> bool:
         """Rerolls when the rolled value is less than 4."""

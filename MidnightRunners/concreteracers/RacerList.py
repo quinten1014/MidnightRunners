@@ -8,6 +8,7 @@ class RacerName(Enum):
     MOUTH            = "Mouth"
     EGG              = "Egg"
     ROCKET_SCIENTIST = "Rocket Scientist"
+    SUCKERFISH       = "Suckerfish"
 
 RacerNameToColorMap = {
     RacerName.BANANA:           (255, 255, 0),    # Yellow
@@ -16,4 +17,5 @@ RacerNameToColorMap = {
     RacerName.MOUTH:            (255, 0, 0),      # Red
     RacerName.EGG:              (255, 255, 255),  # White
     RacerName.ROCKET_SCIENTIST: (0, 0, 255),      # Blue
+    RacerName.SUCKERFISH:       (128, 0, 128),    # Purple
 }

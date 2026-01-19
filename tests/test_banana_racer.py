@@ -18,7 +18,7 @@ class TestBananaGetPowerChanges(unittest.TestCase):
 
     def setUp(self):
         """Set up common test fixtures"""
-        self.banana = Banana(ask_for_input=False)
+        self.banana = Banana(Player.P1, ask_for_input=False)
         self.track = Track(TrackVersion.MILD)
 
         # Create a simple 2-player board state

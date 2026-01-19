@@ -12,6 +12,7 @@ from MidnightRunners.concreteracers.CR_Banana import Banana
 from MidnightRunners.concreteracers.CR_Gunk import Gunk
 from MidnightRunners.concreteracers.CR_Mouth import Mouth
 from MidnightRunners.concreteracers.CR_Romantic import Romantic
+from MidnightRunners.concreteracers.CR_Suckerfish import Suckerfish
 from MidnightRunners.concreteracers.RacerList import RacerName
 from MidnightRunners.core.Race import Race
 from MidnightRunners.core.Track import TrackVersion
@@ -22,6 +23,16 @@ from .replay_dialog import RaceReplayDialog
 
 class MidnightRunnersMainWindow(QMainWindow):
     """Main window for setting up and running Midnight Runners races."""
+
+    # Default racer selections for each player position (easy to modify)
+    DEFAULT_RACERS = [
+        RacerName.BANANA.value,
+        RacerName.SUCKERFISH.value,
+        RacerName.ROMANTIC.value,
+        RacerName.GUNK.value,
+        RacerName.MOUTH.value,
+        RacerName.BANANA.value,  # Player 6 (if needed)
+    ]
 
     def __init__(self):
         super().__init__()
@@ -34,6 +45,7 @@ class MidnightRunnersMainWindow(QMainWindow):
             RacerName.ROMANTIC.value: Romantic,
             RacerName.GUNK.value: Gunk,
             RacerName.MOUTH.value: Mouth,
+            RacerName.SUCKERFISH.value: Suckerfish,
         }
 
         # Player selection dropdowns
@@ -160,7 +172,17 @@ class MidnightRunnersMainWindow(QMainWindow):
             # Racer selection combo box
             racer_combo = QComboBox()
             racer_combo.addItems(sorted(self.racer_classes.keys()))
-            racer_combo.setCurrentIndex(i % len(self.racer_classes))
+
+            # Set default racer based on DEFAULT_RACERS list
+            if i < len(self.DEFAULT_RACERS):
+                default_racer = self.DEFAULT_RACERS[i]
+                if default_racer in self.racer_classes:
+                    racer_combo.setCurrentText(default_racer)
+                else:
+                    racer_combo.setCurrentIndex(i % len(self.racer_classes))
+            else:
+                racer_combo.setCurrentIndex(i % len(self.racer_classes))
+
             row_layout.addWidget(racer_combo)
 
             self.player_combos[player] = racer_combo
@@ -211,7 +233,7 @@ class MidnightRunnersMainWindow(QMainWindow):
 
         for race_num in range(1, num_races + 1):
             # Create fresh racer instances for each race
-            player_to_racer_map = {player: racer_class() for player, racer_class in player_racer_config.items()}
+            player_to_racer_map = {player: racer_class(player) for player, racer_class in player_racer_config.items()}
 
             race = Race(track_version=track_version, player_to_racer_map=player_to_racer_map)
             initial_board_state = deepcopy(race.board_state)

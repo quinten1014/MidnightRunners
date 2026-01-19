@@ -1,12 +1,12 @@
 from copy import deepcopy
 from typing import override
 from MidnightRunners.concreteracers.RacerList import RacerName
-from MidnightRunners.core import AbstractRacer, BoardState
+from MidnightRunners.core import AbstractRacer, BoardState, Player
 
 
 class Banana(AbstractRacer):
-    def __init__(self, ask_for_input: bool = False):
-        super().__init__(RacerName.BANANA, ask_for_move_input=ask_for_input)
+    def __init__(self, player_name: Player, ask_for_input: bool = False):
+        super().__init__(player_name, RacerName.BANANA, ask_for_move_input=ask_for_input)
 
     def get_my_move_from_change(self, change):
         for pos_change in change.position_changes:
