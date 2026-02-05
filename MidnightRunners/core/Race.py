@@ -75,11 +75,15 @@ class Race:
                 racer = self.player_to_racer_map[player]
                 print(f"  Checking triggers for racer {racer.name.value}...")
                 # Don't process racers that have already finished or been eliminated
-                after_bs = self.apply_changes_to_copy(self.board_state, changes)
-                if after_bs.first_place_racer == racer.name or \
-                   after_bs.second_place_racer == racer.name or \
-                   racer.name in after_bs.eliminated_racers:
-                    continue
+                # TODO: This did not actually work as intended, since the racer order might mean
+                # some racers are eliminated before they can actually react (mouth, gunk)
+                # Maybe we have to do this in a smarter way, where we instead after checking the racer's triggers,
+                # if there is any change, we only take those changes into account if the racer is not eliminated/finished at the end of that changeset?
+                # after_bs = self.apply_changes_to_copy(self.board_state, changes)
+                # if after_bs.first_place_racer == racer.name or \
+                #    after_bs.second_place_racer == racer.name or \
+                #    racer.name in after_bs.eliminated_racers:
+                #     continue
                 changes, racer_had_triggers = racer.trig_changes(self.board_state, changes)
                 any_changes_found = any_changes_found or racer_had_triggers
                 if racer_had_triggers:

@@ -49,6 +49,7 @@ class BoardState:
             for trip_change in change.trip_changes:
                 self.racer_trip_map[trip_change.racer_name] = trip_change.tripped_after
             for eliminate_change in change.eliminate_changes:
+                # TODO: Set eliminated racers' positions to something like -2 so we can still display them on the board in a different section
                 self.eliminated_racers.add(eliminate_change.racer_name)
             for point_change in change.point_changes:
                 self.player_points_map[point_change.player] += point_change.points_delta
