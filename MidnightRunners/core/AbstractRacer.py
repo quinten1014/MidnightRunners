@@ -33,13 +33,7 @@ class AbstractRacer:
             main_move_change.add_trip_change(self.name, True, False)
             main_move_change.add_message(f"{self.name.value} is tripped and skips their main move this turn.")
         else:
-            # Else, roll D6 and move forward
-            if self.name == RacerName.BANANA:
-                roll = 1
-            elif self.name == RacerName.GUNK:
-                roll = 6
-            else:
-                roll = random.randint(1, 6)
+            roll = random.randint(1, 6)
             current_position = board_state.racer_name_to_position_map[self.name]
             new_position = Track.GetNewSpace(current_position, roll)
             pos_change = PositionChange(self.name, current_position, new_position)

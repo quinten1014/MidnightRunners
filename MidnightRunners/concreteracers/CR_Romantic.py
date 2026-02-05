@@ -12,6 +12,7 @@ class Romantic(AbstractRacer):
 
     def get_power_changes(self, bs, changes):
         new_changes = []
+        changes_from_power = []
         before_bs = deepcopy(bs)
         power_triggered = False
 
@@ -58,12 +59,13 @@ class Romantic(AbstractRacer):
                 power_triggered = True
                 my_power_move = ChangeSet()
                 my_old_pos = after_bs.racer_name_to_position_map[self.name]
-                my_new_pos = my_old_pos + 2
+                my_new_pos = bs.track.GetNewSpace(my_old_pos, 2)
                 my_power_move.add_pos_change(self.name, my_old_pos, my_new_pos)
                 my_power_move.add_message(f"{racers[0].name} and {racers[1].name} arrived together on space {space}, {self.name.value} moves 2!")
-                new_changes.append(my_power_move)
+                changes_from_power.append(my_power_move)
                 before_bs.apply_change_list([my_power_move])
 
 
             before_bs.apply_change_list([change])
+        new_changes = new_changes + changes_from_power
         return new_changes, power_triggered

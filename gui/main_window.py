@@ -148,11 +148,18 @@ class MidnightRunnersMainWindow(QMainWindow):
 
     def _update_player_fields(self):
         """Update the number of player selection rows based on selected player count."""
-        # Clear existing rows
+        # Clear existing rows - properly delete both widgets and layouts
         while self.player_rows_layout.count():
             item = self.player_rows_layout.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
+            elif item.layout():
+                # Recursively delete layout contents
+                while item.layout().count():
+                    child = item.layout().takeAt(0)
+                    if child.widget():
+                        child.widget().deleteLater()
+                item.layout().deleteLater()
 
         self.player_combos.clear()
 

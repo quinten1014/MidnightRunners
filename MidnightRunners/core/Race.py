@@ -68,21 +68,27 @@ class Race:
 
     def check_triggers(self, changes) -> list:
         """Check for any triggers based on the given change, return updated change list."""
+        print("Checking for triggers...")
         while True:
             any_changes_found = False
             for player in self.turn_order:
                 racer = self.player_to_racer_map[player]
+                print(f"  Checking triggers for racer {racer.name.value}...")
                 # Don't process racers that have already finished or been eliminated
-                if self.board_state.first_place_racer == racer or \
-                   self.board_state.second_place_racer == racer or \
-                   racer.name in self.board_state.eliminated_racers:
+                after_bs = self.apply_changes_to_copy(self.board_state, changes)
+                if after_bs.first_place_racer == racer.name or \
+                   after_bs.second_place_racer == racer.name or \
+                   racer.name in after_bs.eliminated_racers:
                     continue
                 changes, racer_had_triggers = racer.trig_changes(self.board_state, changes)
                 any_changes_found = any_changes_found or racer_had_triggers
                 if racer_had_triggers:
-                    changes, _ = self.track.trig_changes(self.board_state, changes)
+                    print(f"    Racer {racer.name.value} had triggers! Now about to trigger track...")
+                    changes, track_had_triggers = self.track.trig_changes(self.board_state, changes)
+                    if track_had_triggers:
+                        continue
 
-            changes, _ = self.track.trig_changes(self.board_state, changes)
+            # changes, _ = self.track.trig_changes(self.board_state, changes)
 
             if self.apply_changes_to_copy(self.board_state, changes).race_is_finished:
                 break

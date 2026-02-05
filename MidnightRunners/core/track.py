@@ -1,3 +1,4 @@
+from copy import deepcopy
 from enum import Enum
 from re import match
 
@@ -54,27 +55,30 @@ class Track:
 
     def trig_changes(self, bs: BoardState, changes: list) -> tuple[list, bool]:
         """Apply a change to the track state."""
-        changes_after_processing = changes.copy()
+        changes_after_processing = []
         special_space_triggered = False
-        new_changes_to_add = []
 
         for change in changes:
             if change.processed_by_track:
+                changes_after_processing.append(deepcopy(change))
                 continue
             change.processed_by_track = True
+            changes_after_processing.append(deepcopy(change))
 
             for pos_change in change.position_changes:
-                racer_name, _, landed_pos = pos_change.racer_name, pos_change.old_position, pos_change.new_position
+                racer_name, old_pos, landed_pos = pos_change.racer_name, pos_change.old_position, pos_change.new_position
                 player_name = bs.get_player_by_racer(racer_name)
                 landing_space_properties = self.space_properties[landed_pos]
 
                 for property in landing_space_properties:
+                    # Make exception for Start space - no effect on landing
+                    if property == SpecialSpaceProperties.START:
+                        continue
                     # Getting here means there is at least one property to process
                     special_space_triggered = True
                     new_change = ChangeSet()
                     new_change.add_message(f"{racer_name.value} landed on special space {landed_pos} with property {property.name}.")
-                    if property == SpecialSpaceProperties.TRIP and not bs.racer_trip_map[pos_change.racer_name]:
-                        # Avoid double-tripping
+                    if property == SpecialSpaceProperties.TRIP and old_pos != landed_pos:
                         new_change.add_trip_change(pos_change.racer_name, False, True)
                         new_change.add_message(f"{racer_name.value} is tripped.")
                     elif property == SpecialSpaceProperties.STAR1:
@@ -95,10 +99,18 @@ class Track:
                         pos_change = PositionChange(racer_name, landed_pos, pos_after_move)
                         pos_change.set_move_type(MoveType.TRACK)
                         new_change.add_pos_change_obj(pos_change)
-
                         new_change.add_message(f"{racer_name.value} moves to space {pos_after_move}.")
-                    new_changes_to_add.append(new_change)
 
-        changes_after_processing.extend(new_changes_to_add)
+                    changes_after_processing.append(new_change)
+
+                    # If an arrow was triggered, no need to check other properties
+                    # Also, return early since the subsequent changes could be invalid now
+                    if property in (SpecialSpaceProperties.ARROW_PLUS_1,
+                                    SpecialSpaceProperties.ARROW_PLUS_2,
+                                    SpecialSpaceProperties.ARROW_PLUS_3,
+                                    SpecialSpaceProperties.ARROW_MINUS_1,
+                                    SpecialSpaceProperties.ARROW_MINUS_2,
+                                    SpecialSpaceProperties.ARROW_MINUS_4):
+                        return changes_after_processing, True
         # PrintChangeList(changes_after_processing, title="--- Track added changes resulting in: ---") if special_space_triggered else None
         return changes_after_processing, special_space_triggered

@@ -67,6 +67,9 @@ class ChangeSet:
         self.change_messages = []
         self.processed_by_track = False
         self.racers_processed = set()
+        # Flags that can be set specifically by racers, if the racers_processed set is not enough information or
+        # if racers_processed reset should not affect some logic
+        self.racer_flags = {}
 
     def add_message(self, message: str):
         self.change_messages.append(message)
