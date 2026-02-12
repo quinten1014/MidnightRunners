@@ -23,6 +23,12 @@ class Romantic(AbstractRacer):
                 new_changes.append(deepcopy(change))
                 before_bs.apply_change_list([change])
                 continue
+            if before_bs.first_place_racer == self.name or \
+                before_bs.second_place_racer == self.name or \
+                self.name in before_bs.eliminated_racers:
+                    new_changes.append(deepcopy(change))
+                    before_bs.apply_change_list([change])
+                    continue
             change.racers_processed.add(self.name)
             new_changes.append(deepcopy(change))
 

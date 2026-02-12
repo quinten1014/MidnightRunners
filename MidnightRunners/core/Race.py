@@ -12,7 +12,7 @@ from MidnightRunners.core.Track import TrackVersion, Track
 from MidnightRunners.core.Player import Player
 from MidnightRunners.core.Turn import GetNextTurnPhase, TurnPhase
 
-num_turns_limit = 50  # Limit number of turns to avoid infinite loops
+num_turns_limit = 200  # Limit number of turns to avoid infinite loops
 
 class Race:
     def __init__(self, track_version: TrackVersion, player_to_racer_map: dict):
